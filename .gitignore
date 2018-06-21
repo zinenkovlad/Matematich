@@ -6,3 +6,5 @@ config\.py
 *.iml
 
 \.idea/
+
+__pycache__/
