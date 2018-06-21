@@ -1,3 +1,4 @@
+import sys
 import telebot
 import random
 import config
@@ -5,7 +6,7 @@ from SQLighter import SQLighter
 from utils import get_chat_name
 from time import sleep
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(sys.argv[1])
 
 
 @bot.message_handler(commands=['reg'])
