@@ -2,3 +2,7 @@
 config\.py
 
 *.db
+
+*.iml
+
+\.idea/

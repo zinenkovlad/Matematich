@@ -1,8 +1,8 @@
 import telebot
 import random
-import pytelegramBotApi_bot.config as config
-from pytelegramBotApi_bot.SQLighter import SQLighter
-from pytelegramBotApi_bot.utils import get_chat_name
+import config
+from SQLighter import SQLighter
+from utils import get_chat_name
 from time import sleep
 
 bot = telebot.TeleBot(config.token)
