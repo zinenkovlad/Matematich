@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from utils import Player
 
 
 class SQLighter:
@@ -8,7 +9,7 @@ class SQLighter:
         self.cursor = self.connection.cursor()
 
     def clean_query(self, query):
-        return [x[0] for x in self.cursor.execute(query)]
+        return [x[0] for x in self.cursor.execute(query).fetchall()]
 
     def get_registered_chats(self):
         return self.clean_query("SELECT name FROM sqlite_master WHERE type='table'")
@@ -42,22 +43,24 @@ class SQLighter:
 
     def is_played(self, chat):
         """ Did users played today in this chat? """
-        day_played = list(self.clean_query("SELECT day FROM {}_played".format(chat)))[0]
+        day_played = self.clean_query("SELECT day FROM {}_played".format(chat))[0]
         current_day = datetime.today().day
         return current_day == day_played
 
     def count_users(self, chat):
         """ Count number of users in chat"""
-        users = self.cursor.execute("SELECT * FROM {}".format(chat))
-        return len(list(users))
+        users = self.cursor.execute("SELECT * FROM {}".format(chat)).fetchall()
+        return len(users)
 
-    def get_winner(self, chat, id):
+    def get_winner(self, chat, id_winner):
         """ Gets one user """
-        return list(self.cursor.execute("SELECT * FROM {0} WHERE id = {1}".format(chat, id)))
+        winner = self.cursor.execute("SELECT * FROM {0} WHERE id = {1}".format(chat, id_winner)).fetchall()[0]
+        return Player(*winner)
 
-    def get_losers(self, chat, id):
+    def get_losers(self, chat, id_winner):
         """ Gets all users except one"""
-        return list(self.cursor.execute("SELECT * FROM {0} WHERE NOT id = {1}".format(chat, id)))
+        losers = self.cursor.execute("SELECT * FROM {0} WHERE NOT id = {1}".format(chat, id_winner)).fetchall()
+        return [Player(*loser) for loser in losers]
 
     def update_is_played(self, chat):
         """ Updates is played table """
@@ -66,10 +69,12 @@ class SQLighter:
 
     def update_stats(self, chat, winner, losers):
         """ Increments corresponding columns for winner and losers """
-        self.cursor.execute("UPDATE {0} SET n_matematich = n_matematich + 1 WHERE id = {1}".format(chat, winner))
+        winner_id = winner.id
+        losers_id = [loser.id for loser in losers]
+        self.cursor.execute("UPDATE {0} SET n_matematich = n_matematich + 1 WHERE id = {1}".format(chat, winner_id))
         self.connection.commit()
-        for loser in losers:
-            self.cursor.execute("UPDATE {0} SET n_pes = n_pes + 1 WHERE id = {1}".format(chat, loser))
+        for loser_id in losers_id:
+            self.cursor.execute("UPDATE {0} SET n_pes = n_pes + 1 WHERE id = {1}".format(chat, loser_id))
             self.connection.commit()
 
     def update_tables(self, chat, winner, losers):

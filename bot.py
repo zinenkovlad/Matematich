@@ -35,15 +35,14 @@ def play(message):
         played = db_worker.is_played(chat)
         if not played:
             n_players = db_worker.count_users(chat)
-            winner_id = db_worker.get_winner(chat, random.randint(1, n_players))[0][0]
-            winner_username = db_worker.get_winner(chat, winner_id)[0][2]
-            losers_ids = [user[0] for user in db_worker.get_losers(chat, winner_id)]
-            losers_usernames = ['@' + user[2] for user in db_worker.get_losers(chat, winner_id)]
-            words = config.common_words.copy()
+            winner = db_worker.get_winner(chat, random.randint(1, n_players))
+            losers = db_worker.get_losers(chat, winner.id)
 
-            words.insert(-1, '@' + winner_username)
-            if losers_ids:
-                words.append(", ".join(losers_usernames))
+            words = config.common_words.copy()
+            words.insert(-1, '@' + winner.username)
+
+            if losers:
+                words.append(", ".join(['@' + loser.username for loser in losers]))
             else:
                 del words[-1]
                 words.append("а псов нет как бы")
@@ -52,7 +51,7 @@ def play(message):
                 bot.send_message(message.chat.id, word)
                 sleep(2.0)
 
-            db_worker.update_tables(chat, winner_id, losers_ids)
+            db_worker.update_tables(chat, winner, losers)
         else:
             bot.send_message(message.chat.id, "Хватит одного математика на сегодня")
     else:
