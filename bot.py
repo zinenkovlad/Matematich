@@ -36,18 +36,19 @@ def play(message):
         if not played:
             n_players = db_worker.count_users(chat)
             winner_id = db_worker.get_winner(chat, random.randint(1, n_players))[0][0]
-            winner_username = db_worker.get_winner(chat, random.randint(1, n_players))[0][2]
+            winner_username = db_worker.get_winner(chat, winner_id)[0][2]
             losers_ids = [user[0] for user in db_worker.get_losers(chat, winner_id)]
             losers_usernames = ['@' + user[2] for user in db_worker.get_losers(chat, winner_id)]
+            words = config.common_words.copy()
 
-            config.common_words.insert(-1, '@' + winner_username)
+            words.insert(-1, '@' + winner_username)
             if losers_ids:
-                config.common_words.append(", ".join(losers_usernames))
+                words.append(", ".join(losers_usernames))
             else:
-                del config.common_words[-1]
-                config.common_words.append("а псов нет как бы")
+                del words[-1]
+                words.append("а псов нет как бы")
 
-            for word in config.common_words:
+            for word in words:
                 bot.send_message(message.chat.id, word)
                 sleep(2.0)
 
